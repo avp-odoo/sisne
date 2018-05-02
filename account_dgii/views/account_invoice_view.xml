@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="account_invoice_inherit_form">
+            <field name="name">account.invoice.form</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_supplier_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='date_due']" position="after">
+                    <field name="ncf_no" required="1"/>
+                    <field name="type_good_services_id" required="1" widget="selection" />
+                    <field name="ncf_doc_modification" invisible="1" />
+                    <field name="tipo_id" invisible="1"/>
+                    <field name="receipt_year" invisible="1"/>
+                    <field name="receipt_date" invisible="1"/>
+                    <field name="pay_year" invisible="1"/>
+                    <field name="pay_date" invisible="1"/>
+                    <field name="billed_tax" invisible="1"/>
+                    <field name="withheld_tax" invisible="1"/>
+                    <field name="retention_tax" invisible="1"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_tax_form_inherit">
+            <field name="name">account.tax.form</field>
+            <field name="model">account.tax</field>
+            <field name="inherit_id" ref="account.view_tax_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form/sheet/notebook/page[1]/group/group[1]" position="inside">
+                    <field name="include_606"/>
+                    <field name="category_id" widget="selection" attrs="{'invisible':[('include_606','=',False)]}" />
+                </xpath>
+            </field>
+        </record>
+
+        <record id="account_invoice_tree_report" model="ir.ui.view">
+            <field name="name">account.invoice.tree</field>
+            <field name="model">account.invoice</field>
+            <field name="arch" type="xml">
+                <tree string="Invoice Line">
+                    <field name="supplier_tax_no" style="width:10px"/>
+                    <field name="tipo_id"/>
+                    <field name="type_good_services_id"/>
+                    <field name="ncf_no"/>
+                    <field name="ncf_doc_modification"/>
+                    <field name="receipt_year"/>
+                    <field name="receipt_date" />
+                    <field name="pay_year"/>
+                    <field name="pay_date"/>
+                    <field name="billed_tax"/>
+                    <field name="withheld_tax"/>
+                    <field name="amount_untaxed"/>
+                    <field name="retention_tax"/>
+                </tree>
+            </field>
+        </record>
+    </data>
+</openerp>

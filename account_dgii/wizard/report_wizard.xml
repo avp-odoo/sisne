@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="accounting_invoice_report_view" model="ir.ui.view">
+        <field name="name">account.invoice.report.service</field>
+        <field name="model">account.invoice.report.service</field>
+        <field name="arch" type="xml">
+            <form string="Credit Note">
+                <group>
+
+                     <group>
+                        <label for="month" string="Period"/>
+                        <div>
+
+                            <field name="month" class="oe_inline" nolabel="1"/>
+                            <field name="year" class="oe_inline" nolabel="1"/>
+                            <field name="from_date" invisible="1"/>
+                        </div>
+                     </group>
+                     <!-- <group>
+                        <label for="month" string="TO"/>
+                        <div>
+                            <field name="month" class="oe_inline" nolabel="1"/>
+                            <field name="year"  class="oe_inline" nolabel="1"/>
+                            <field name="to_date" invisible="1"/>
+                        </div>
+                     </group> -->
+                 </group>
+                 <footer>
+                        <button string="Display" name="generate_report" type="object" default_focus="1"/>
+                         or 
+                        <button string="Cancel" class="btn-default" special="cancel"/>
+                    </footer>
+             </form>
+        </field>
+    </record>
+
+    <record id="action_account_invoice_report_bs" model="ir.actions.act_window">
+        <field name="name">Report</field>
+        <field name="res_model">account.invoice.report.service</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="accounting_invoice_report_view"/>
+        <field name="target">new</field>
+    </record>
+
+     <record id="accounting_invoice_report_print_view" model="ir.ui.view">
+        <field name="name">account.invoice.report.service</field>
+        <field name="model">account.invoice.report.service</field>
+        <field name="arch" type="xml">
+            <form string="Credit Note">
+                <footer>
+                    <button string="Print Excel" name="print_report" type="object" default_focus="1"/>
+                     or 
+                    <button string="Cancel" class="btn-default" special="cancel"/>
+                </footer>
+             </form>
+        </field>
+    </record>
+    
+    <record id="accounting_invoice_report_print_view_text" model="ir.ui.view">
+        <field name="name">account.invoice.report.service</field>
+        <field name="model">account.invoice.report.service</field>
+        <field name="arch" type="xml">
+            <form string="Credit Note">
+                <footer>
+                    <button string="Print Text" name="print_text_report" type="object" default_focus="1"/>
+                     or 
+                    <button string="Cancel" class="btn-default" special="cancel"/>
+                </footer>
+             </form>
+        </field>
+    </record>
+
+    <act_window id="action_account_invoice_excel_report_more"
+            multi="True"
+            key2="client_action_multi" name="Export To Excel"
+            res_model="account.invoice.report.service" src_model="account.invoice"
+            view_mode="form" target="new" view_type="form" view_id="accounting_invoice_report_print_view"/>
+
+    <act_window id="action_account_invoice_excel_report_text"
+            multi="True"
+            key2="client_action_multi" name="Export To Text"
+            res_model="account.invoice.report.service" src_model="account.invoice"
+            view_mode="form" target="new" view_type="form" view_id="accounting_invoice_report_print_view_text"/>
+</odoo>

@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="purchased_good_service_form">
+            <field name="name">purchased.good.service.form</field>
+            <field name="model">purchased.good.service</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="code"/>
+                            </group>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="purchased_good_service_action" model="ir.actions.act_window">
+            <field name="name">Tipo Bienes y Servicios Comprados
+    </field>
+            <field name="res_model">purchased.good.service</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+         <menuitem id="menu_purchase_good_service" name="Tipo Bienes y Servicios Comprados" parent="purchase.menu_purchase_config"
+            sequence="0" action="purchased_good_service_action" groups="base.group_no_one"/>
+
+
+
+        <record model="ir.ui.view" id="account_tax_category_form">
+            <field name="name">account.tax.category.form</field>
+            <field name="model">account.tax.category</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                            
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="account_tax_category_action" model="ir.actions.act_window">
+            <field name="name">606 (Category)</field>
+            <field name="res_model">account.tax.category</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        
+         <menuitem id="menu_account_tax_category" name="606 (Category)" parent="purchase.menu_purchase_config"
+            sequence="0" action="account_tax_category_action" groups="base.group_no_one"/>
+
+
+	</data>
+</openerp>

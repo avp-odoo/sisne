@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+		<menuitem id="menu_account_dgii" name="DGII" parent="account.menu_finance_reports"/>
+        <menuitem id="menu_account_dgii_606" name="606" action="action_account_invoice_report_bs" parent="menu_account_dgii"/>
+
+    </data>
+</odoo>

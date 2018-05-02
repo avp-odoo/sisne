@@ -7,10 +7,12 @@
     'category': 'Accounting',
     'description': """
     """,
-    'depends': ['account'],
+    'depends': ['account', 'account_dgii'],
     'website': 'https://www.odoo.com/page/accounting',
     'data': [
         'views/account_invoice.xml',
         'views/account_tax.xml',
+        'wizard/report_wizard.xml',
+        'views/menuitem_view.xml',
     ],
 }

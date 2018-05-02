@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="accounting_invoice_report_view" model="ir.ui.view">
+        <field name="name">account.invoice.report.service</field>
+        <field name="model">account.invoice.report.service.606</field>
+        <field name="arch" type="xml">
+            <form string="Credit Note">
+                <group>
+
+                     <group>
+                        <label for="month" string="Period"/>
+                        <div>
+
+                            <field name="month" class="oe_inline" nolabel="1"/>
+                            <field name="year" class="oe_inline" nolabel="1"/>
+                            <field name="from_date" invisible="1"/>
+                        </div>
+                     </group>
+                     <!-- <group>
+                        <label for="month" string="TO"/>
+                        <div>
+                            <field name="month" class="oe_inline" nolabel="1"/>
+                            <field name="year"  class="oe_inline" nolabel="1"/>
+                            <field name="to_date" invisible="1"/>
+                        </div>
+                     </group> -->
+                 </group>
+                 <footer>
+                        <button string="Print Excel" name="print_report_custom" type="object" class="btn-primary"/>
+                        <!-- <button string="Display" name="generate_report" type="object" default_focus="1"/> -->
+                         or 
+                        <button string="Print Text" name="print_text_report" type="object"/>
+                        <!-- <button string="Cancel" class="btn-default" special="cancel"/> -->
+                    </footer>
+             </form>
+        </field>
+    </record>
+
+    <record id="action_account_invoice_report_bs" model="ir.actions.act_window">
+        <field name="name">Report</field>
+        <field name="res_model">account.invoice.report.service.606</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="accounting_invoice_report_view"/>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

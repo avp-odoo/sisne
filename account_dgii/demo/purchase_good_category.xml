@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        
+        <!-- TAGS FOR RETRIEVING THE DEMO ACCOUNTS -->
+
+        <record id="category_1" model="purchased.good.service">
+            <field name="code">01</field>
+            <field name="name">GASTOS DE PERSONAL</field>
+        </record>
+        <record id="category_2" model="purchased.good.service">
+            <field name="code">02</field>
+            <field name="name">GASTOS POR TRABAJOS, SUMINISTROS Y SERVICIOS</field>
+        </record>
+        <record id="category_3" model="purchased.good.service">
+            <field name="code">03</field>
+            <field name="name">ARRENDAMIENTOS</field>
+        </record>
+        <record id="category_4" model="purchased.good.service">
+            <field name="code">04</field>
+            <field name="name">GASTOS DE ACTIVOS FIJO</field>
+        </record>
+        <record id="category_5" model="purchased.good.service">
+            <field name="code">05</field>
+            <field name="name">GASTOS DE REPRESENTACIÓN</field>
+        </record>
+        <record id="category_6" model="purchased.good.service">
+            <field name="code">06</field>
+            <field name="name">OTRAS DEDUCCIONES ADMITIDAS</field>
+        </record>
+        <record id="category_7" model="purchased.good.service">
+            <field name="code">07</field>
+            <field name="name">GASTOS FINANCIEROS</field>
+        </record>
+        <record id="category_8" model="purchased.good.service">
+            <field name="code">08</field>
+            <field name="name">GASTOS EXTRAORDINARIOS</field>
+        </record>
+        <record id="category_9" model="purchased.good.service">
+            <field name="code">09</field>
+            <field name="name">COMPRAS Y GASTOS QUE FORMARAN PARTE DEL COSTO DE VENTA</field>
+        </record>
+        <record id="category_10" model="purchased.good.service">
+            <field name="code">10</field>
+            <field name="name">ADQUISICIONES DE ACTIVOS</field>
+        </record>
+        <record id="category_11" model="purchased.good.service">
+            <field name="code">11</field>
+            <field name="name">GASTOS DE SEGURO</field>
+        </record>
+
+         <record id="tax_category_1" model="account.tax.category">
+            <field name="name">Itbis Facturado</field>
+        </record>
+         <record id="tax_category_2" model="account.tax.category">
+            <field name="name">Itbis Retenido</field>
+        </record>
+         <record id="tax_category_3" model="account.tax.category">
+            <field name="name">Retencion Renta</field>
+        </record>
+
+</data>
+</openerp>
+        			

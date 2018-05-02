@@ -8,7 +8,7 @@ from odoo.exceptions import ValidationError
 class AccountInvoice(models.Model):
     _inherit = "account.invoice"
 
-    ncf = fields.Char(string='NCF', help='Invoice Number Provided by Vendor.\n Format should be: A0000000000')
+
     tipo = fields.Selection([
             ('01','01-GASTOS DE PERSONAL'),
             ('02','02-GRASTOS POR TRABAJOS, SUMINISTROS Y SERVICIOS'),
@@ -23,10 +23,14 @@ class AccountInvoice(models.Model):
             ('11','11-GASTOS DE SEGURO'),
         ], string='Tipo', help='Type of Purchase')
 
-    @api.constrains('ncf')
+    @api.constrains('ncf_no')
     def check_format_ncf(self):
         #check length
+        print "called"
         for invoice in self:
-            if invoice.ncf:
-                if len(invoice.ncf) != 11 or invoice.ncf[0].isdigit() or invoice.ncf[0] != 'A' or (not invoice.ncf[1:].isdigit()):
-                    raise ValidationError(_('The NCF number [%s] does not seem to be valid. \nNote: the expected format is A0123456789') % invoice.ncf)
+            if invoice.ncf_no and invoice.type in ('in_invoice','in_refund'):
+                print "iNnnnnnnn"
+                if len(invoice.ncf_no) != 11 or invoice.ncf_no[0].isdigit() or invoice.ncf_no[0] != 'A' or (not invoice.ncf_no[1:].isdigit()):
+                    print "rrrrrrrrrrr"
+                    raise ValidationError(_('The NCF number [%s] does not seem to be valid. \nNote: the expected format is A0123456789'))
+
