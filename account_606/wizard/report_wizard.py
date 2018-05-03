@@ -62,7 +62,6 @@ class InvoiceReportService(models.TransientModel):
 
 	@api.multi
 	def print_report_custom(self):
-		context = dict(self._context or {})
 		tmp_name='/tmp/invoice_report.xlsx'
 		file_name = '606'
 		if self.year:
@@ -111,8 +110,8 @@ class InvoiceReportService(models.TransientModel):
 		rnc_no = ''
 		if self.env.user and self.env.user.company_id:
 			company = self.env.user.company_id
-			if company.rnc_no and len(company.rnc_no) == 11:
-				rnc_no = company.rnc_no
+			if company.vat and len(company.vat) == 11:
+				rnc = company.vat
 
 		worksheet.write(row, col, rnc_no)
 		worksheet.set_column(row, col, 20)
@@ -251,9 +250,9 @@ class InvoiceReportService(models.TransientModel):
 			col = 0
 			rnc = ''
 			if rowdata.partner_id and rowdata.partner_id.is_company:
-				rnc = rowdata.partner_id.rnc and rowdata.partner_id.rnc.zfill(9) or ''
+				rnc = rowdata.partner_id.vat and rowdata.partner_id.vat.zfill(9) or ''
 			else:
-				rnc = rowdata.partner_id.cedula and rowdata.partner_id.cedula.zfill(11) or ''
+				rnc = rowdata.partner_id.vat and rowdata.partner_id.vat.zfill(11) or ''
 
 			#1
 			worksheet.set_column(row, col, 10)
@@ -269,11 +268,11 @@ class InvoiceReportService(models.TransientModel):
 			col += 1
 
 			#4
-			worksheet.write(row, col, rowdata.ncf_no)
+			worksheet.write(row, col, rowdata.ncf)
 			col += 1
 			
 			#5
-			worksheet.write(row, col, rowdata.ncf_doc_modification)
+			worksheet.write(row, col, rowdata.ncf_modification)
 			col += 1
 			
 			#6
@@ -422,64 +421,189 @@ class InvoiceReportService(models.TransientModel):
 		}
 
 	@api.multi
-	def print_text_report(self):
-		name = '/home/ubuntu/txt/606.txt'  # Name of text file coerced with +.txt
+	def print_text_report_custom(self):
 		try:
+			file_name = '606'
+			if self.year:
+				file_name = file_name + str(self.year)
+
+			if self.month:
+				file_name = file_name + str(self.month)
+
+			name = file_name + '.txt'  # Name of text file coerced with +.txt
 			file = open(name,'w+')   # Trying to create a new file or open one
-			untaxed_amount = 0.0
-			rtn_tax = 0.0
-			user_id = self.env['res.users'].search([('id','=',self._uid)])
-			company_id = self.env['res.company'].search([('id','=',user_id.company_id.id)])
-			period ='      '
+
+			user_id = self.env.user
+			company_id = user_id.company_id
 
 			invoice_ids = self.vendor_bills()
 
-			# for rowdata in self.env['account.invoice'].browse(self._context.get('active_ids')):
-			for rowdata in invoice_ids:
-				untaxed_amount += rowdata.amount_untaxed
-				rtn_tax += rowdata.retention_tax
-				period = rowdata.pay_year
-			length = "%012d" % (len(self._context.get('active_ids')),) 
-			rtn_tax = "%012.2f" % (abs(rtn_tax),) 
-			untaxed_amount = "%016.2f" % (untaxed_amount,) 
-			rnc_no = "{:>11}".format(str(company_id.rnc_no if company_id.rnc_no != 0 else ''))
-			header_string = "606" + rnc_no + period + length + untaxed_amount + rtn_tax + "\n"
+			### Header Part ###
+			header_1 = self._remove_ascii_char('Código Información')
+			header_2 = self._remove_ascii_char('RNC o Cédula')
+			header_3 = self._remove_ascii_char('Periodo')
+			header_4 = self._remove_ascii_char('Cantidad Registros')
 
+			header_string = header_1 + " | " + header_2 + " | " + header_3 + " | " + header_4 + "\n"
 			file.write(header_string)
-			length = len(self._context.get('active_ids'))
-			for rowdata in self.env['account.invoice'].browse(self._context.get('active_ids')):
-				supplier_tax_no = "{:<11}".format(str(rowdata.supplier_tax_no if rowdata.supplier_tax_no != 0 else ''))
-				tipo_id = str(rowdata.tipo_id)
-				type_good_services_id =  str(rowdata.type_good_services_id.code)
-				ncf_no="{:<19}".format(str(rowdata.ncf_no))
-				ncf_doc_modification ="{:<19}".format(str(rowdata.ncf_doc_modification if rowdata.ncf_doc_modification != 0 else ''))
-				# ncf_doc_modification ="{:<19}".format(str(rowdata.ncf_doc_modification))
-				receipt_year = str(rowdata.receipt_year)
-				receipt_date = str(rowdata.receipt_date)
-				pay_year = str(rowdata.pay_year)
-				pay_date = str(rowdata.pay_date)
-				billed_tax = "%012.2f" % (rowdata.billed_tax,)
-				withheld_tax = "%012.2f" % (abs(rowdata.withheld_tax),)
-				amount_untaxed = "%012.2f" % (rowdata.amount_untaxed,)  
-				retention_tax = "%012.2f" % (abs(rowdata.retention_tax),) 
-				string = supplier_tax_no + tipo_id +type_good_services_id+ ncf_no +  ncf_doc_modification + receipt_year + receipt_date + pay_year + pay_date + billed_tax + withheld_tax + amount_untaxed + retention_tax 
-				if length> 1:
-					string+="\n"
-					length -=1
 
-				file.write(string)
+			# Company Detail
+			rnc_no = ''
+			if self.env.user and self.env.user.company_id:
+				company = self.env.user.company_id
+				if company.vat and len(company.vat) == 11:
+					rnc_no = company.vat
+
+			header_val_1 = "{:>18}".format(str("606"))
+			header_val_2 = "{:>12}".format(str(rnc_no))
+			header_val_3 = "{:>7}".format(str(self.year) + str(self.month))
+			header_val_4 = "{:>18}".format(str(len(invoice_ids)))
+
+			header_val_string = header_val_1 + " | " + header_val_2 + " | " + header_val_3 + " | " + header_val_4 + "\n\n\n"
+
+			file.write(header_val_string)
+
+			inv_header_1 = self._remove_ascii_char('RNC o Cédula')
+			inv_header_2 = 'Tipo Id'
+			inv_header_3 = self._remove_ascii_char('Tipo Bienes y Servicios Comprados')
+			inv_header_4 = 'NCF'
+			inv_header_5 = 'NCF Documento Modificado'
+			inv_header_6 = 'Fecha Comprobante'
+			inv_header_7 = 'Fecha Pago'
+			inv_header_8 = 'Monto Facturado en Servicios'
+			inv_header_9 = 'Monto Facturado en Bienes'
+			inv_header_10 = 'Total Monto Facturado'
+			inv_header_11 = 'ITBIS Facturado'
+			inv_header_12 = 'Itbis Retenido'
+			inv_header_13 = 'ITBIS sujeto a Proporcionalidad (Art. 349)'
+			inv_header_14 = 'ITBIS llevado al Costo'
+			inv_header_15 = 'ITBIS por Adelantar'
+			inv_header_16 = 'ITBIS percibido en compras'
+			inv_header_17 = self._remove_ascii_char('Tipo de Retención en ISR')
+			inv_header_18 = self._remove_ascii_char('Monto Retención Renta')
+			inv_header_19 = 'ISR Percibido en compras'
+			inv_header_20 = 'Impuesto Selectivo al Consumo'
+			inv_header_21 = 'Otros Impuestos/Tasas'
+			inv_header_22 = 'Monto Propina Legal'
+			inv_header_23 = 'Forma de Pago'
+
+			inv_header_string = inv_header_1 + " | " + inv_header_2 + " | " + inv_header_3 + " | " + inv_header_4 + " | " \
+			+ inv_header_5 + " | " + inv_header_6 + " | " + inv_header_7 + " | " + inv_header_8 + " | " + inv_header_9 + " | " \
+			+ inv_header_10 + " | " + inv_header_11 + " | " + inv_header_12 + " | " + inv_header_13 + " | " \
+			+ inv_header_14 + " | " + inv_header_15 + " | " + inv_header_16 + " | " + inv_header_17 + " | " \
+			+ inv_header_18 + " | " + inv_header_19 + " | " + inv_header_20 + " | " + inv_header_21 + " | " \
+			+ inv_header_22 + " | " + inv_header_23 + "\n"
+
+			file.write(inv_header_string)
+
+			length = len(invoice_ids)
+			for rowdata in invoice_ids:
+				rnc = ''
+				if rowdata.partner_id and rowdata.partner_id.is_company:
+					rnc = "{:>9}".format(str(rowdata.partner_id.vat or ''))
+				else:
+					rnc = "{:>11}".format(str(rowdata.partner_id.vat or ''))
+
+				inv_val_1 = rnc
+				inv_val_2 = rowdata.tipo_id
+				inv_val_3 = rowdata.tipo
+				inv_val_4 = "{:>11}".format(str(rowdata.ncf))
+				inv_val_5 = "{:>19}".format(str(rowdata.ncf_modification))
+				inv_val_6 = datetime.datetime.strptime(rowdata.date_invoice, '%Y-%m-%d').strftime('%Y%m%d')
+
+				#7
+				pay_date = ""
+				if rowdata.pay_year and rowdata.pay_date:
+					pay_date = rowdata.pay_year + rowdata.pay_date
+				
+				inv_val_7 = "{:>6}".format(str(pay_date))
+				
+				#8 Total of service type product without tax
+				total_monto_facturado_en_servicios = sum([line.quantity * line.price_unit for line in rowdata.invoice_line_ids if line.product_id and line.product_id.type == 'service'])
+				inv_val_8 = "%012.2f" % (total_monto_facturado_en_servicios,) 
+				
+				# #9 Total of not service type product without tax
+				total_monto_facturado_en_bienes = sum([line.quantity * line.price_unit for line in rowdata.invoice_line_ids if line.product_id and line.product_id.type != 'service'])
+				inv_val_9 = "%012.2f" % (total_monto_facturado_en_bienes,) 
+
+				#10 Total amount without tax
+				inv_val_10 = "%012.2f" % (rowdata.amount_untaxed,)
+
+				# Tax Updates
+				itbis_facturado_price = 0.00
+				itbis_retenido_price = 0.00
+				itbis_sujeto_troporcionalidad_price = 0.00
+				itbis_llevado_price = 0.00
+				monto_retencion_renta_price = 0.00
+				impuesto_selectivo_al_consumo_price = 0.00
+				otros_impuestos_price = 0.00
+				monto_propina_legal_price = 0.00
+
+				for line in rowdata.invoice_line_ids:
+					taxes = line.mapped("invoice_line_tax_ids")
+					itbis_facturado = taxes.filtered(lambda x: x.itbis_facturado)
+					itbis_retenido = taxes.filtered(lambda x: x.itbis_retenido)
+					itbis_sujeto_troporcionalidad = taxes.filtered(lambda x: x.itbis_sujeto_troporcionalidad)
+					itbis_llevado = taxes.filtered(lambda x: x.itbis_llevado)
+					monto_retencion_renta = taxes.filtered(lambda x: x.monto_retencion_renta)
+					impuesto_selectivo_al_consumo = taxes.filtered(lambda x: x.impuesto_selectivo_al_consumo)
+					otros_impuestos = taxes.filtered(lambda x: x.otros_impuestos)
+					monto_propina_legal = taxes.filtered(lambda x: x.monto_propina_legal)
+
+					price = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
+					
+					itbis_facturado_tax_data = itbis_facturado.compute_all(price, rowdata.currency_id or None , line.quantity, product=line.product_id, partner=rowdata.partner_id)
+					itbis_retenido_tax_data = itbis_retenido.compute_all(price, rowdata.currency_id or None , line.quantity, product=line.product_id, partner=rowdata.partner_id)
+					itbis_sujeto_troporcionalidad_tax_data = itbis_sujeto_troporcionalidad.compute_all(price, rowdata.currency_id or None , line.quantity, product=line.product_id, partner=rowdata.partner_id)
+					itbis_llevado_tax_data = itbis_llevado.compute_all(price, rowdata.currency_id or None , line.quantity, product=line.product_id, partner=rowdata.partner_id)
+					monto_retencion_renta_tax_data = monto_retencion_renta.compute_all(price, rowdata.currency_id or None , line.quantity, product=line.product_id, partner=rowdata.partner_id)
+					impuesto_selectivo_al_consumo_tax_data = impuesto_selectivo_al_consumo.compute_all(price, rowdata.currency_id or None , line.quantity, product=line.product_id, partner=rowdata.partner_id)
+					otros_impuestos_tax_data = otros_impuestos.compute_all(price, rowdata.currency_id or None , line.quantity, product=line.product_id, partner=rowdata.partner_id)
+					monto_propina_legal_tax_data = monto_propina_legal.compute_all(price, rowdata.currency_id or None , line.quantity, product=line.product_id, partner=rowdata.partner_id)
+					
+					itbis_facturado_price += sum([data['amount'] for data in itbis_facturado_tax_data['taxes']])
+					itbis_retenido_price += sum([data['amount'] for data in itbis_retenido_tax_data['taxes']])
+					itbis_sujeto_troporcionalidad_price += sum([data['amount'] for data in itbis_sujeto_troporcionalidad_tax_data['taxes']])
+					itbis_llevado_price += sum([data['amount'] for data in itbis_llevado_tax_data['taxes']])
+					monto_retencion_renta_price += sum([data['amount'] for data in monto_retencion_renta_tax_data['taxes']])
+					impuesto_selectivo_al_consumo_price += sum([data['amount'] for data in impuesto_selectivo_al_consumo_tax_data['taxes']])
+					otros_impuestos_price += sum([data['amount'] for data in otros_impuestos_tax_data['taxes']])
+					monto_propina_legal_price += sum([data['amount'] for data in monto_propina_legal_tax_data['taxes']])
+				
+				inv_val_11 = "%012.2f" % (itbis_facturado_price,)
+				inv_val_12 = "%012.2f" % (itbis_retenido_price,)
+				inv_val_13 = "%012.2f" % (itbis_sujeto_troporcionalidad_price,)
+				inv_val_14 = "%012.2f" % (itbis_llevado_price,)
+				inv_val_15 = "%012.2f" % ((itbis_facturado_price - itbis_llevado_price),)
+				inv_val_16 = "%012.2f" % (0,)
+				inv_val_17 = "{:>2}".format(str(''))
+				inv_val_18 = "%012.2f" % (monto_retencion_renta_price,)
+				inv_val_19 = "%012.2f" % (0,)
+				inv_val_20 = "%012.2f" % (impuesto_selectivo_al_consumo_price,)
+				inv_val_21 = "%012.2f" % (otros_impuestos_price,)
+				inv_val_22 = "%012.2f" % (monto_propina_legal_price,)
+				inv_val_23 = "{:>2}".format(str(''))
+
+				inv_val_string = str(inv_val_1) + " | " + str(inv_val_2) + " | " + str(inv_val_3) + " | " + str(inv_val_4) + " | " + str(inv_val_5) \
+					+ " | " + str(inv_val_6) + " | " + str(inv_val_7) + " | " + str(inv_val_8) + " | " + str(inv_val_9) + " | " + str(inv_val_10) \
+					+ " | " + str(inv_val_11) + " | " + str(inv_val_12) + " | " + str(inv_val_13) + " | " + str(inv_val_14) + " | " + str(inv_val_15) \
+					+ str(inv_val_16) + " | " + str(inv_val_17) + " | " + str(inv_val_18) + " | " + str(inv_val_19) + " | " + str(inv_val_20) + " | " \
+					+ str(inv_val_21) + " | " + str(inv_val_22) + " | " + str(inv_val_23)
+
+				if length > 1:
+					inv_val_string += "\n"
+					length -= 1
+				file.write(inv_val_string)
 			file.close()
-
 		except:
-			print('Something went wrong! Can\'t tell what?')
+			print('Something went wrong! Can\'t tell what?', sys.exc_info()[0])
 			sys.exit(0) # quit Python
 		with open(name, 'r') as myfile:
 			data = myfile.read()
 			myfile.close()
 			result = base64.b64encode(data)
-		attachment_obj = self.env['ir.attachment']
-		attachment_id = attachment_obj.create({'name': name, 'datas_fname': name, 'datas': result})
-		download_url = '/web/content/'+str(attachment_id.id)+'?download=true'#'model=ir.attachment&field=datas&filename_field=name&id=' + str(attachment_id.id)
+		attachment_id = self.env['ir.attachment'].create({'name': name, 'datas_fname': name, 'datas': result})
+		download_url = '/web/content/'+str(attachment_id.id)+'?download=true' #'model=ir.attachment&field=datas&filename_field=name&id=' + str(attachment_id.id)
 		base_url = self.env['ir.config_parameter'].get_param('web.base.url')
 
 		return {

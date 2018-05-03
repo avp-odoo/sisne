@@ -2,8 +2,8 @@
 <odoo>
     <data>
 
-		<menuitem id="account_dgii.menu_account_dgii" name="DGII" parent="account.menu_finance_reports"/>
-        <menuitem id="menu_account_dgii_606" name="New 606" action="action_account_invoice_report_bs" parent="account_dgii.menu_account_dgii"/>
+		<menuitem id="main_menu_account_606" name="606" parent="account.menu_finance_reports"/>
+        <menuitem id="child_menu_account_606" name="606" action="action_account_invoice_report_bs" parent="main_menu_account_606"/>
 
     </data>
 </odoo>
