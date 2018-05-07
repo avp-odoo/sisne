@@ -28,6 +28,8 @@ class InvoiceReportService(models.TransientModel):
 
 	from_date = fields.Date(string="From Date")
 	to_date = fields.Date(string="To Date")
+	invoice_data = fields.Char('Name')
+	file_name = fields.Binary('Invoice Report', readonly=True)
 	month = fields.Selection([('01','01'),
 								('02','02'),
 								('03','03'),
@@ -80,7 +82,6 @@ class InvoiceReportService(models.TransientModel):
 		col = 0
 		
 		url_format = workbook.add_format({'bold':1})
-		total_time_xl = []
 		
 		### Header Part ###
 		worksheet.write(row, col, self._remove_ascii_char('Código Información'), url_format)
@@ -407,18 +408,20 @@ class InvoiceReportService(models.TransientModel):
 		with open(tmp_name, 'r') as myfile:
 			data = myfile.read()
 			myfile.close()
-		result = base64.b64encode(data)
+		
+		out = base64.encodestring(data)
 
-		attachment_obj = self.env['ir.attachment']
-		attachment_id = attachment_obj.create({'name': f_name, 'datas_fname': f_name, 'datas': result})
-		download_url = '/web/content/'+str(attachment_id.id)+'?download=true'#'model=ir.attachment&field=datas&filename_field=name&id=' + str(attachment_id.id)
-		base_url = self.env['ir.config_parameter'].get_param('web.base.url')
-
+		attach_vals = {'invoice_data': f_name, 'file_name': out}
+		act_id = self.env['account.invoice.report.service.606'].create(attach_vals)
 		return {
-			"type": "ir.actions.act_url",
-			"url": str(base_url) + str(download_url),
-			"target": "self",
-		}
+            'type': 'ir.actions.act_window',
+            'res_model': 'account.invoice.report.service.606',
+            'res_id': act_id.id,
+            'view_type': 'form',
+            'view_mode': 'form',
+            'context': self.env.context,
+            'target': 'new',
+        }
 
 	@api.multi
 	def print_text_report_custom(self):
@@ -602,12 +605,16 @@ class InvoiceReportService(models.TransientModel):
 			data = myfile.read()
 			myfile.close()
 			result = base64.b64encode(data)
-		attachment_id = self.env['ir.attachment'].create({'name': name, 'datas_fname': name, 'datas': result})
-		download_url = '/web/content/'+str(attachment_id.id)+'?download=true' #'model=ir.attachment&field=datas&filename_field=name&id=' + str(attachment_id.id)
-		base_url = self.env['ir.config_parameter'].get_param('web.base.url')
-
+		
+		attach_vals = {'invoice_data': name, 'file_name': result}
+		act_id = self.env['account.invoice.report.service.606'].create(attach_vals)
 		return {
-			"type": "ir.actions.act_url",
-			"url": str(base_url) + str(download_url),
-			"target": "self",
-		}
+            'type': 'ir.actions.act_window',
+            'res_model': 'account.invoice.report.service.606',
+            'res_id': act_id.id,
+            'view_type': 'form',
+            'view_mode': 'form',
+            'context': self.env.context,
+            'target': 'new',
+        }
+

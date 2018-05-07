@@ -16,6 +16,9 @@
                         </div>
                      </group>
                  </group>
+                 <label for="file_name" attrs="{'invisible': [('file_name', '=', False)]}"/>
+                <field name="file_name" filename="invoice_data" attrs="{'invisible': [('file_name', '=', False)]}"/>
+                <field name="invoice_data" invisible="1" />
                  <footer>
                         <button string="Print Excel" name="print_report_custom" type="object" class="btn-primary"/>
                          or 
