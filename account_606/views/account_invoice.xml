@@ -10,7 +10,7 @@
             <field name="arch" type="xml">
                 <field name="date_due" position="after">
                     <field name="ncf" attrs="{'required': [('type', '=', 'in_invoice')]}"/>
-                    <field name="tipo"/>
+                    <field name="tipo" required="1"/>
                 </field>
             </field>
         </record>

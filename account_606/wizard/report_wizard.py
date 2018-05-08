@@ -53,14 +53,13 @@ class InvoiceReportService(models.TransientModel):
 			month_day = monthrange(int(self.year),int(self.month))
 			end_date = start_date + datetime.timedelta(days=int(month_day[1]))
 			domain += ('date_invoice','>=',start_date),('date_invoice','<',end_date)
-			print "domainnnn",domain
 			invoice_ids = self.env[('account.invoice')].search(domain)
 		if invoice_ids:
 			invoice_ids = invoice_ids.filtered(lambda inv: inv.state not in ['draft','cancel'])
 		return invoice_ids
 
-	def _remove_ascii_char(self, text):
-		return re.sub(r'[^\x00-\x7F]+',' ', text)
+# 	def _remove_ascii_char(self, text):
+# 		return re.sub(r'[^\x00-\x7F]+',' ', text)
 
 	@api.multi
 	def print_report_custom(self):
@@ -84,19 +83,19 @@ class InvoiceReportService(models.TransientModel):
 		url_format = workbook.add_format({'bold':1})
 		
 		### Header Part ###
-		worksheet.write(row, col, self._remove_ascii_char('Código Información'), url_format)
+		worksheet.write(row, col, 'Codigo Informacion', url_format)
 		worksheet.set_column(row, col, 20)
 		col += 1
 		
-		worksheet.write(row, col, self._remove_ascii_char('RNC o Cédula'), url_format)
+		worksheet.write(row, col, 'RNC o Cedula', url_format)
 		worksheet.set_column(row, col, 20)
 		col += 1
 		
-		worksheet.write(row, col, self._remove_ascii_char('Periodo'), url_format)
+		worksheet.write(row, col, 'Periodo', url_format)
 		worksheet.set_column(row, col, 20)
 		col += 1
 
-		worksheet.write(row, col, self._remove_ascii_char('Cantidad Registros'), url_format)
+		worksheet.write(row, col, 'Cantidad Registros', url_format)
 		worksheet.set_column(row, col, 20)
 		col += 1
 
@@ -108,13 +107,9 @@ class InvoiceReportService(models.TransientModel):
 		col += 1
 		
 		# Company Detail
-		rnc_no = ''
-		if self.env.user and self.env.user.company_id:
-			company = self.env.user.company_id
-			if company.vat and len(company.vat) == 11:
-				rnc = company.vat
-
-		worksheet.write(row, col, rnc_no)
+		rnc = "{:>11}".format(str(self.env.user.company_id.vat)) 
+		
+		worksheet.write(row, col, rnc)
 		worksheet.set_column(row, col, 20)
 		col += 1
 		
@@ -125,11 +120,11 @@ class InvoiceReportService(models.TransientModel):
 		worksheet.write(row, col, str(len(invoice_ids)).zfill(12))
 		worksheet.set_column(row, col, 20)
 		col += 1
-		row += 4
+		row += 2
 
 		#1 rnc
 		col = 0
-		worksheet.write(row, col, self._remove_ascii_char('RNC o Cédula'), url_format)
+		worksheet.write(row, col, 'RNC o Cedula', url_format)
 		worksheet.set_column(row, col, 20)
 		col += 1
 		
@@ -139,7 +134,7 @@ class InvoiceReportService(models.TransientModel):
 		col += 1
 		
 		#3
-		worksheet.write(row, col, self._remove_ascii_char('Tipo Bienes y Servicios Comprados'), url_format)
+		worksheet.write(row, col, 'Tipo Bienes y Servicios Comprados', url_format)
 		worksheet.set_column(row, col, 20)
 		col += 1
 		
@@ -209,12 +204,12 @@ class InvoiceReportService(models.TransientModel):
 		col += 1
 
 		#17
-		worksheet.write(row, col, self._remove_ascii_char('Tipo de Retención en ISR'), url_format)
+		worksheet.write(row, col, 'Tipo de Retencion en ISR', url_format)
 		worksheet.set_column(row, col, 20)
 		col += 1
 
 		#18
-		worksheet.write(row, col, self._remove_ascii_char('Monto Retención Renta'), url_format)
+		worksheet.write(row, col, 'Monto Retencion Renta', url_format)
 		worksheet.set_column(row, col, 20)
 		col += 1
 
@@ -265,15 +260,15 @@ class InvoiceReportService(models.TransientModel):
 			col += 1
 
 			#3
-			worksheet.write(row, col, rowdata.tipo)
+			worksheet.write(row, col, rowdata.tipo or '')
 			col += 1
 
 			#4
-			worksheet.write(row, col, rowdata.ncf)
+			worksheet.write(row, col, rowdata.ncf or '')
 			col += 1
 			
 			#5
-			worksheet.write(row, col, rowdata.ncf_modification)
+			worksheet.write(row, col, rowdata.ncf_modification or '')
 			col += 1
 			
 			#6
@@ -436,39 +431,33 @@ class InvoiceReportService(models.TransientModel):
 			name = file_name + '.txt'  # Name of text file coerced with +.txt
 			file = open(name,'w+')   # Trying to create a new file or open one
 
-			user_id = self.env.user
-			company_id = user_id.company_id
 
 			invoice_ids = self.vendor_bills()
 
 			### Header Part ###
-			header_1 = self._remove_ascii_char('Código Información')
-			header_2 = self._remove_ascii_char('RNC o Cédula')
-			header_3 = self._remove_ascii_char('Periodo')
-			header_4 = self._remove_ascii_char('Cantidad Registros')
+			header_1 = 'Codigo Informacion'
+			header_2 = 'RNC o Cedula'
+			header_3 = 'Periodo'
+			header_4 = 'Cantidad Registros'
 
-			header_string = header_1 + " | " + header_2 + " | " + header_3 + " | " + header_4 + "\n"
+			header_string = header_1 + "|" + header_2 + "|" + header_3 + "|" + header_4 + "\n"
 			file.write(header_string)
 
 			# Company Detail
-			rnc_no = ''
-			if self.env.user and self.env.user.company_id:
-				company = self.env.user.company_id
-				if company.vat and len(company.vat) == 11:
-					rnc_no = company.vat
+			rnc = "{:>11}".format(str(self.env.user.company_id.vat)) 
 
 			header_val_1 = "{:>18}".format(str("606"))
-			header_val_2 = "{:>12}".format(str(rnc_no))
+			header_val_2 = "{:>12}".format(str(rnc or ''))
 			header_val_3 = "{:>7}".format(str(self.year) + str(self.month))
 			header_val_4 = "{:>18}".format(str(len(invoice_ids)))
 
-			header_val_string = header_val_1 + " | " + header_val_2 + " | " + header_val_3 + " | " + header_val_4 + "\n\n\n"
+			header_val_string = header_val_1 + "|" + header_val_2 + "|" + header_val_3 + "|" + header_val_4 + "\n"
 
 			file.write(header_val_string)
 
-			inv_header_1 = self._remove_ascii_char('RNC o Cédula')
+			inv_header_1 = 'RNC o Cedula'
 			inv_header_2 = 'Tipo Id'
-			inv_header_3 = self._remove_ascii_char('Tipo Bienes y Servicios Comprados')
+			inv_header_3 = 'Tipo Bienes y Servicios Comprados'
 			inv_header_4 = 'NCF'
 			inv_header_5 = 'NCF Documento Modificado'
 			inv_header_6 = 'Fecha Comprobante'
@@ -482,20 +471,20 @@ class InvoiceReportService(models.TransientModel):
 			inv_header_14 = 'ITBIS llevado al Costo'
 			inv_header_15 = 'ITBIS por Adelantar'
 			inv_header_16 = 'ITBIS percibido en compras'
-			inv_header_17 = self._remove_ascii_char('Tipo de Retención en ISR')
-			inv_header_18 = self._remove_ascii_char('Monto Retención Renta')
+			inv_header_17 = 'Tipo de Retencion en ISR'
+			inv_header_18 = 'Monto Retencion Renta'
 			inv_header_19 = 'ISR Percibido en compras'
 			inv_header_20 = 'Impuesto Selectivo al Consumo'
 			inv_header_21 = 'Otros Impuestos/Tasas'
 			inv_header_22 = 'Monto Propina Legal'
 			inv_header_23 = 'Forma de Pago'
 
-			inv_header_string = inv_header_1 + " | " + inv_header_2 + " | " + inv_header_3 + " | " + inv_header_4 + " | " \
-			+ inv_header_5 + " | " + inv_header_6 + " | " + inv_header_7 + " | " + inv_header_8 + " | " + inv_header_9 + " | " \
-			+ inv_header_10 + " | " + inv_header_11 + " | " + inv_header_12 + " | " + inv_header_13 + " | " \
-			+ inv_header_14 + " | " + inv_header_15 + " | " + inv_header_16 + " | " + inv_header_17 + " | " \
-			+ inv_header_18 + " | " + inv_header_19 + " | " + inv_header_20 + " | " + inv_header_21 + " | " \
-			+ inv_header_22 + " | " + inv_header_23 + "\n"
+			inv_header_string = inv_header_1 + "|" + inv_header_2 + "|" + inv_header_3 + "|" + inv_header_4 + "|" \
+			+ inv_header_5 + "|" + inv_header_6 + "|" + inv_header_7 + "|" + inv_header_8 + "|" + inv_header_9 + "|" \
+			+ inv_header_10 + "|" + inv_header_11 + "|" + inv_header_12 + "|" + inv_header_13 + "|" \
+			+ inv_header_14 + "|" + inv_header_15 + "|" + inv_header_16 + "|" + inv_header_17 + "|" \
+			+ inv_header_18 + "|" + inv_header_19 + "|" + inv_header_20 + "|" + inv_header_21 + "|" \
+			+ inv_header_22 + "|" + inv_header_23 + "\n"
 
 			file.write(inv_header_string)
 
@@ -509,9 +498,9 @@ class InvoiceReportService(models.TransientModel):
 
 				inv_val_1 = rnc
 				inv_val_2 = rowdata.tipo_id
-				inv_val_3 = rowdata.tipo
-				inv_val_4 = "{:>11}".format(str(rowdata.ncf))
-				inv_val_5 = "{:>19}".format(str(rowdata.ncf_modification))
+				inv_val_3 = rowdata.tipo or ''
+				inv_val_4 = "{:>11}".format(str(rowdata.ncf or ''))
+				inv_val_5 = "{:>19}".format(str(rowdata.ncf_modification or ''))
 				inv_val_6 = datetime.datetime.strptime(rowdata.date_invoice, '%Y-%m-%d').strftime('%Y%m%d')
 
 				#7
@@ -519,7 +508,7 @@ class InvoiceReportService(models.TransientModel):
 				if rowdata.pay_year and rowdata.pay_date:
 					pay_date = rowdata.pay_year + rowdata.pay_date
 				
-				inv_val_7 = "{:>6}".format(str(pay_date))
+				inv_val_7 = "{:>6}".format(str(pay_date or ''))
 				
 				#8 Total of service type product without tax
 				total_monto_facturado_en_servicios = sum([line.quantity * line.price_unit for line in rowdata.invoice_line_ids if line.product_id and line.product_id.type == 'service'])
@@ -587,11 +576,11 @@ class InvoiceReportService(models.TransientModel):
 				inv_val_22 = "%012.2f" % (monto_propina_legal_price,)
 				inv_val_23 = "{:>2}".format(str(''))
 
-				inv_val_string = str(inv_val_1) + " | " + str(inv_val_2) + " | " + str(inv_val_3) + " | " + str(inv_val_4) + " | " + str(inv_val_5) \
-					+ " | " + str(inv_val_6) + " | " + str(inv_val_7) + " | " + str(inv_val_8) + " | " + str(inv_val_9) + " | " + str(inv_val_10) \
-					+ " | " + str(inv_val_11) + " | " + str(inv_val_12) + " | " + str(inv_val_13) + " | " + str(inv_val_14) + " | " + str(inv_val_15) \
-					+ str(inv_val_16) + " | " + str(inv_val_17) + " | " + str(inv_val_18) + " | " + str(inv_val_19) + " | " + str(inv_val_20) + " | " \
-					+ str(inv_val_21) + " | " + str(inv_val_22) + " | " + str(inv_val_23)
+				inv_val_string = str(inv_val_1) + "|" + str(inv_val_2) + "|" + str(inv_val_3) + "|" + str(inv_val_4) + "|" + str(inv_val_5) \
+					+ "|" + str(inv_val_6) + "|" + str(inv_val_7) + "|" + str(inv_val_8) + "|" + str(inv_val_9) + "|" + str(inv_val_10) \
+					+ "|" + str(inv_val_11) + "|" + str(inv_val_12) + "|" + str(inv_val_13) + "|" + str(inv_val_14) + "|" + str(inv_val_15) \
+					+ str(inv_val_16) + "|" + str(inv_val_17) + "|" + str(inv_val_18) + "|" + str(inv_val_19) + "|" + str(inv_val_20) + "|" \
+					+ str(inv_val_21) + "|" + str(inv_val_22) + "|" + str(inv_val_23)
 
 				if length > 1:
 					inv_val_string += "\n"
