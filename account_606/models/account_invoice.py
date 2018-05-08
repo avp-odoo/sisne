@@ -54,7 +54,7 @@ class AccountInvoice(models.Model):
         for invoice in self:
             if invoice.ncf and invoice.type in ('in_invoice','in_refund'):
                 if len(invoice.ncf) != 12 or invoice.ncf[0].isdigit() or not invoice.ncf[0].isupper()  or (not invoice.ncf[1:].isdigit()):
-                    raise ValidationError(_('The NCF number does not seem to be valid. \nNote: the expected format is A0123456789'))
+                    raise ValidationError(_('The NCF number does not seem to be valid. \nNote: the expected format is A01234567891'))
 
     @api.model
     def set_ncf(self):
